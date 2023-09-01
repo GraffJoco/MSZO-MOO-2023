@@ -1,0 +1,5 @@
+# 1. ZH: Bevezetés
+
+Az előző félévben a C nevű programnyelvet tanultuk. Ez a nyelv jó alapokat adott a programozáshoz (főleg az alacsony nyelvű programozáshoz), de nagyon hiányos, legalábbis a modern alternatívákhoz képest. Emiatt hozta létre Bjarne Stroustrup a C++-t, amit a C modernizált verziójának szánt.  
+Ellentétben a C-vel, ami csak minimálisan fejlődött 1972 óta, a C++ gyakran új funkciókat kap, például a legujjabb verzió (C++23) 9 különböző könyvtárral bővítette a nyelvet. A C++ alapja viszont ugyanaz maradt a mai napig: C, de osztályokkal, és objektum orientált funkciókkal.  
+Az osztályok elődjét már C-ben használtuk, ezek voltak a `struct`-ok, de az egyértelmű, hogy nagyon hiányosak, valójában csak több változót lehet egybe kombinálni velük. Az osztályok jóval több funkcióval rendelkeznek: például lehet külön függvénye az osztálynak (pl.: `obj.fv(param)`), konstruktora és destrukora (függvények, amiket létrehozáskor hívunk, pl.: `objektum szal(konstruktor_parameter)`), műveletek felülírása (pl.: egy vektor objektumnál a `vec1 + vec2` egy külön függvényt hív, ami elmondja a nyelvnek, hogy mit csináljon)
