@@ -267,6 +267,8 @@ public:
 };
 ```
 
+# Komplexebb objektumműveletek, és elemek
+
 ## Statikus elem
 
 Egy osztály statikus eleme olyan elem, ami az osztály *minden* példányánál közös, ha az egyiknél módosítjuk, akkor az összesnél. Ezt nem a `.`, hanem a namespaces `::` operátorral lehet elérni:
@@ -316,7 +318,7 @@ Például az előző példánkat úgy módosíthatjuk, hogy `hanyVektorVan` legy
 int hanyVektorVan();
 
 class vektor {
-    static int vektorokSzama = 0;
+    static int vektorokSzama;
 public:
     double x, y, z;
 
@@ -333,8 +335,289 @@ public:
     friend int hanyVektorVan();
 };
 
+vektor::vektorokSzama = 0;
+
 int hanyVektorVan() {
     // vektorokSzama privát, de mivel barátja a függvénynek, hozzáférhetünk
     return vektor::vektorokSzama;
 }
+```
+
+## Operátor túlterhelés
+
+Hogy lehet, hogy a `std::cout`-ot a `<<` (biteltolás balra) művelettel hívjuk meg? Ez az operátor túlterhelés, amivel felülírhatunk egy beépített műveletet, és egy függvényt hívhatunk helyette. Az fontos, hogy kétoperandú műveletet (pl.: kivonás) csak kétoperandusúként, egyoperandusút egyoperandusúként lehet túlterhelni. Ezeket a túlterheléseket nem feltétlenül kell az osztályon belül definiálni, valamint akármilyen típusokkal megoldható.
+
+Alap szintaxis (példaként az összeadás operátorral):
+
+```C++
+class vec2 {
+public:
+    int x, y;
+
+    vec2(int x = 0.0, int y = 0.0) : x(x), y(y) {}
+
+    vec2 operator+(vec2 masik) {
+        return vec2(this->x + masik.x, this->y + masik.y);
+    }
+};
+
+vec2 egyik(4, 2);
+vec2 masik = egyik + vec2(2, 7); // masik = {6, 9}
+```
+
+Ennek használatával a `std::cout`-tal is kompatibilissá lehet tenni az objektumokat:
+
+```C++
+class vec2 {
+    // ...
+
+    friend std::ostream operator<<(std::ostream& os, const vec2& ez);
+};
+
+std::ostream operator<<(std::ostream& os, const vec2& ez) {
+    os << "{ " << ez.x << "; " << ez.y << "}";
+    return os;
+}
+```
+
+Bővítsük a `vektor`-unkat:
+
+```C++
+int hanyVektorVan();
+
+class vektor {
+    static int vektorokSzama;
+public:
+    double x, y, z;
+
+    vektor(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z) {
+        vektorokSzama++;
+    }
+
+    ~vektor() { vektorokSzama--; }
+
+    double hossz() {
+        return sqrt(x * x + y * y + z * z);
+    }
+
+    // Matematikai műveletek
+    vektor operator+(const vektor masik) {
+        return vektor(this->x + masik.x, this->y + masik.y, this->z + masik.z);
+    }
+    vektor operator-(const vektor masik) {
+        return vektor(this->x - masik.x, this->y - masik.y, this->z - masik.z);
+    }
+    // Konstanssal szorzás
+    vektor operator*(double skalar) {
+        return vektor(this->x * skalar, this->y * skalar, this->z * skalar);
+    }
+    // Skalár szorzás, lehet túlterhelni a * operátort többször is, más típust is adhat vissza
+    vektor operator*(const vektor masik) {
+        return this->x * masik.x + this->y * masik.y + this->z * masik.z;
+    }
+
+    // Értékadás, vektor&-t adunk vissza, mert így egy soron belül lehet még felhasználni a művelet eredményét
+
+    // Ez ezesetben redundáns (felesleges), mivel egy az egyben másoljuk át a memóriát
+    vektor& operator=(const vektor masik) {
+        *this = masik;
+        return *this;
+    }
+    vektor& operator+=(const vektor masik) {
+        *this = *this + masik;
+        return *this;
+    }
+    vektor& operator-=(const vektor masik) {
+        *this = *this - masik;
+        return *this;
+    }
+    vektor& operator*=(const double skalar) {
+        *this = *this * skalar;
+        return *this;
+    }
+
+    // Összehasonlítás
+    bool operator<(vektor masik) {
+        return this->hossz() < masik.hossz();
+    }
+    bool operator>(vektor masik) {
+        return this->hossz() > masik.hossz();
+    }
+    bool operator==(vektor masik) {
+        return this->x == masik.x && this->y == masik.y && this->z == masik.z;
+    }
+
+    friend int hanyVektorVan();
+    friend std::ostream operator<<(std::ostream& os, const vektor& vec);
+};
+
+vektor::vektorokSzama = 0;
+
+int hanyVektorVan() {
+    return vektor::vektorokSzama;
+}
+
+std::ostream operator<<(std::ostream& os, const vektor& vec) {
+    os << "{ " << vec.x << "; " << vec.y << "; " << vec.z " }";
+    return os;
+}
+```
+
+## Különböző fajta értékadások (egyenlőség operátor)
+
+Az egyenlővé tétel (=) operátor alapból átmásolja az osztály összes memóriáját az egyik osztályból a másikba. Ez gyakran (például a `vektor`-unknál) tökéletes, de gyakran komoly gondokat okozhat. Például ha van egy pointer elemünk, és két osztály egyenlő, mindkettő fel próbálja szabadítani a memóriát, amikor a destruktort hívja a kód, tehát kicímez. Ezt úgy lehet megoldani, hogy külön műveletet definiálunk az ilyen osztályoknál a sima = helyett, valamint konstruktoroknál is lehet ilyet csinálni:
+
+```C++
+class string {
+    char* str;
+    int hossz;
+
+public:
+    char* getStr() { return str; }
+    int getHossz() { return hossz; }
+
+    string(char* str_p, int hossz) : str(new char[hossz]), hossz(hossz) {
+        strncpy_s(str, hossz, str_p, hossz);
+    }
+
+    ~string() {
+        delete[] str;
+    }
+
+    string(const string& masik) : str(new char[masik.hossz]), hossz(masik.hossz) {
+        strncpy_s(str, masik.hossz, masik.str, masik.hossz);
+    }
+
+    string& operator=(string& masik) {
+        // Ha str != nullptr, akkor fel kell szabadítani
+        if (str != nullptr) delete[] str;
+
+        this->hossz = masik.hossz;
+        this->str = new char[masik.hossz];
+        strncpy_s(str, hossz, masik.str, hossz);
+    }
+}
+```
+
+# Templatek
+
+A C++ egyik fő trükke az úgy nevezett *"zero cost abstraction"* megoldások használata. Ez azt jelenti, hogy absztrakt kifejezések ugyanolyan gyorsan futnak, mintha te írtad volna meg optimalizáltam az algoritmust. Míg a C-ben a fordító vette a kódod, és egyszerűen átalakította gépi kóddá, a C++-ban a fordítóval jelentős mennyiségű munkát csináltathatsz meg úgy, hogy a fordított program nem lesz lassabb. Az egyik ilyen dolog az ú.n. template.  
+Ez azt jelenti, hogy csak egy *mintát* csinálsz az osztályból, és megadod, hogy a C++ fordító mi alapján csináljon ebből külön típust. Erre a legegyszerűbb példa az, amikor típusfüggetlenné akarjuk tenni az osztályunk, vagy függvényünk.
+
+Vegyük a következő C++ függvényt:
+
+```C++
+-double szoroz(const double a, const double b) {
+    return a * b;
+}
+```
+
+Mit csináljuk, ha int-et akarunk használni? lehet, hogy a paraméterekből *és* az eredményből int-et csinálunk `(int)` használatával, de ez lassú, és kerekítési hibákhoz vezethet. Viszont tudunk templatet csinálni helyette, és a fordító eldönti, hogy milyen típusokra hozzon létre változatokat a függvényből:
+
+```C++
+// Itt T a típus neve, amivel dolgozunk
+template <typename T>
+T szoroz(const T a, const T b) {
+    return a * b;
+}
+```
+
+Ha egy verzióját akarjuk használni, akkor a név és zárójelek között \<>-ben tudjuk megadni a típusparamétert:
+
+```C++
+double egyik = szoroz<double>(2.0, -1.0); // -2.0
+int masik = szoroz<int>(23, 3); // 69
+```
+
+A fordító C++ szabványtól függően gyakran tudja értelmezni, hogy melyik verzió kell, tehát nem mindig kötelező kiírni a relációs jeleket:
+
+```C++
+// Nem mindig működik, de hasznos, amikor igen
+double egyik = szoroz(2.0, -1.0);
+int masik = szoroz(23, 3);
+```
+
+Ezt osztályokkal is meg lehet csinálni, tegyük `vektor`-t típusfüggetlenné
+
+```C++
+// Minden vektor-ral kapcsolatos függvénynél ki kell rakni!
+template <typename T>
+int hanyVektorVan();
+
+template <typename T>
+class vektor {
+    static int vektorokSzama;
+public:
+    T x, y, z;
+
+    vektor(T x = 0.0, T y = 0.0, T z = 0.0) : x(x), y(y), z(z) {
+        vektorokSzama++;
+    }
+
+    ~vektor() { vektorokSzama--; }
+
+    double hossz() {
+        return sqrt(x * x + y * y + z * z);
+    }
+
+    vektor<T> operator+(const vektor<T> masik) {
+        return vektor(this->x + masik.x, this->y + masik.y, this->z + masik.z);
+    }
+    vektor<T> operator-(const vektor<T> masik) {
+        return vektor(this->x - masik.x, this->y - masik.y, this->z - masik.z);
+    }
+    
+    vektor<T> operator*(double skalar) {
+        return vektor(this->x * skalar, this->y * skalar, this->z * skalar);
+    }
+
+    vektor<T> operator*(const vektor<T> masik) {
+        return this->x * masik.x + this->y * masik.y + this->z * masik.z;
+    }
+
+    vektor<T>& operator=(const vektor<T> masik) {
+        *this = masik;
+        return *this;
+    }
+    vektor<T>& operator+=(const vektor<T> masik) {
+        *this = *this + masik;
+        return *this;
+    }
+    vektor<T>& operator-=(const vektor<T> masik) {
+        *this = *this - masik;
+        return *this;
+    }
+    vektor<T>& operator*=(const T skalar) {
+        *this = *this * skalar;
+        return *this;
+    }
+
+    bool operator<(vektor<T> masik) {
+        return this->hossz() < masik.hossz();
+    }
+    bool operator>(vektor<T> masik) {
+        return this->hossz() > masik.hossz();
+    }
+    bool operator==(vektor<T> masik) {
+        return this->x == masik.x && this->y == masik.y && this->z == masik.z;
+    }
+
+    friend int hanyVektorVan();
+    template <typename U>
+    friend std::ostream& operator<<(std::ostream& os, const vektor<U>& vec);
+};
+
+template <typename T>
+int hanyVektorVan() {
+    return vektor<T>::vektorokSzama;
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const vektor<T>& vec) {
+    os << "{ " << vec.x << "; " << vec.y << "; " << vec.z << " }";
+    return os;
+}
+
+template <typename T>
+int vektor<T>::vektorokSzama = 0;
 ```
