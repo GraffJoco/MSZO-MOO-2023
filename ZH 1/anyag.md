@@ -186,6 +186,8 @@ struct ember {
         delete[] nev;
     }
 };
+
+ember Endre("Endre", strlen("Endre"), 42);
 ```
 
 Az elemek létrehozásánál gyakran van az, hogy a konstruktorban `elem = elem_parameter`, de ezt lehet egyszerűbben írni egy inicializálós listával:
@@ -199,4 +201,140 @@ struct ember {
     }
     // ...
 };
+```
+
+Bővítsük ki a `vektor`-unkat egy konstruktorral is:
+
+```C++
+struct vektor {
+    double x, y, z;
+
+    vektor(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z) {}
+
+    double hossz() {
+        return sqrt(x * x + y * y + z * z);
+    }
+};
+```
+
+## Nyílvános és privát elemek/függvények
+
+Azt említettem, hogy a `struct` és `class` között csak egy fő különbség van, az pedig az, hogy egy `struct` minden eleme alapból publikus, a `class`-nál meg privát. Ez mit is jelent?
+Egy publikus elemhez akármi hozzányúlhat, hívhatja, módosíthatja. Ez problémákhoz vezethet, mert vannak elemek, amiknél azt akarjuk, hogy ne-, vagy csak egy-két függvény módosíthassa. Például ha csinálunk egy string objektumot, ami tárolja a hosszát is, nem akarjuk, hogy módosítsák azt, mert ebből kicímzés/memóriahiba lehet.
+Az alapértelmezett beállítást úgy lehet felülírni, ha `public:` vagy `private:` kerül az elemek elé. Egymás után lehet privát és publikus elem, természetesen. Van egy harmadik opció is: a `protected`, erről viszont később lesz szó.
+
+A stringpélda:
+
+```C++
+class string {
+    // class, alapból privát minden
+    char* str;
+    int hossz;
+
+    // Belső elemekhez persze hozzá akarunk férni, nem módosító célra, tehát például ha egy függvény adja vissza, akkor nem lesz baj
+public:
+    char* getStr() { return str; }
+    int getHossz() { return hossz; }
+
+    // Nyílvános konstruktorra/destruktorra szinte mindig szükség van
+    string(char* str_p, int hossz) : str(new char[hossz]), hossz(hossz) {
+        strncpy_s(str, hossz, str_p, hossz);
+    }
+
+    ~string() {
+        delete[] str;
+    }
+}
+
+string teszt("Tej #1", strlen("Tej #1"));
+teszt.hossz = 51; // ERROR, privát elemet nem látunk, és módosítani sem tudjuk!
+teszt.getHossz() = 51; // ERROR, függvény értéket ad vissza, ami nem módosítható változó
+std::cout << teszt.getHossz(); // OK
+```
+
+A vektorunkat átírhatjuk class-á (ez ajánlott nem C-s objektumoknál), public elemekkel:
+
+```C++
+class vektor {
+public:
+    double x, y, z;
+
+    vektor(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z) {}
+
+    double hossz() {
+        return sqrt(x * x + y * y + z * z);
+    }
+};
+```
+
+## Statikus elem
+
+Egy osztály statikus eleme olyan elem, ami az osztály *minden* példányánál közös, ha az egyiknél módosítjuk, akkor az összesnél. Ezt nem a `.`, hanem a namespaces `::` operátorral lehet elérni:
+
+```C++
+class kor {
+    static const double PI = 3.14159;
+
+public:
+    double R;
+    
+    // kor:: elhagyható objektumon belül
+    double kerulet() { return 2.0 * R * kor::PI; }
+    double terulet() { return R * R * PI; }
+}
+```
+
+Például nézhetjük a vektorunknál, hogy egyszerre hány elem létezik:
+
+```C++
+class vektor {
+    static int vektorokSzama = 0;
+public:
+    double x, y, z;
+
+    vektor(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z) {
+        vektorokSzama++;
+    }
+
+    ~vektor() { vektorokSzama--; }
+
+    int hanyVektorVan() { return vektorokSzama; }
+
+    double hossz() {
+        return sqrt(x * x + y * y + z * z);
+    }
+};
+```
+
+## Barátok
+
+A C++ osztályoknak lehetnek barátai is (több, mint neked, az biztos). Egy barát hozzáférhet privát elemekhez. Az objektumon belül kell a primitívjét, és a `friend` kulcsszót használni, hogy definiáljunk egy barátot.  
+Például az előző példánkat úgy módosíthatjuk, hogy `hanyVektorVan` legyen külön függvény:
+
+```C++
+// Prototípus, hogy a fordító tudja, hogy létezik a függvény
+int hanyVektorVan();
+
+class vektor {
+    static int vektorokSzama = 0;
+public:
+    double x, y, z;
+
+    vektor(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z) {
+        vektorokSzama++;
+    }
+
+    ~vektor() { vektorokSzama--; }
+
+    double hossz() {
+        return sqrt(x * x + y * y + z * z);
+    }
+
+    friend int hanyVektorVan();
+};
+
+int hanyVektorVan() {
+    // vektorokSzama privát, de mivel barátja a függvénynek, hozzáférhetünk
+    return vektor::vektorokSzama;
+}
 ```
