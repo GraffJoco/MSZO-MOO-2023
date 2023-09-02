@@ -1,3 +1,5 @@
 prezentaciok
 *.exe
 .vscode
+*.s
+*.asm
