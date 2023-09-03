@@ -40,7 +40,7 @@ printf("%lf", ertek);
 
 ## Az \<iostream\> és \<fstream\> könyvtár
 
-C-ben a printf-et kezelni nem mindig egyszerű, ezért C++-ban az \<iostream\> könyvtár ezen javít. Itt egyszerűen `std::cout`-nak kell adni egymás után felsorolva a kiírandó dolgokat a `<<` művelettel (kicsit csúnyán néz ki, de szimpla)
+C-ben a printf-et kezelni nem mindig egyszerű, ezért C++-ban az \<iostream\> könyvtár ezen javít. Itt egyszerűen `std::cout`-nak kell adni egymás után felsorolva a kiírandó dolgokat a `<<` művelettel (kicsit csúnyán néz ki, de szimpla), `std::cin`-nel meg beolvasni, `>>` műveletet használva
 
 C-ben:
 
@@ -63,6 +63,31 @@ int main() {
     double masikValt = 89;
 
     std::cout << "1. valtozo: " << elsoValt << ", 2. valtozo: " << masikValt << std::endl; // std::endl helyett "\n" is lehet sorvége
+
+    int olvasottErtek;
+    std::cin >> olvasottErtek;
+}
+```
+
+Fájlkezelést az `<fstream>` könyvtárral lehet kezelni:
+
+```C++
+#include <fstream>
+#include <iostream>
+
+int main() {
+    std::ifstream inputFajl("adat.txt"); // beolvassa az adat.txt fájlt az inputFajl változóba
+    if (!inputFajl.good()) { return -1; }
+
+    int adat;
+    inputFajl >> adat; // adatba olvas
+    inputFajl.close();
+
+    std::ofstream outputFajl("kimenet.txt");
+    if (!outputFajl.good()) { return -1; }
+
+    outputFajl << adat << " lett beolvasva";
+    outputFajl.close();
 }
 ```
 
@@ -120,9 +145,7 @@ A mallochoz képest triviális ezt használni:
 ```C++
 int* valtozo = new int;
 int* ujTomb = new int[10];
-
 // ...
-
 delete valtozo;
 delete[] ujTomb; // Tömböknél szögletes zárójel!
 ```
@@ -139,7 +162,6 @@ struct Tanulo {
     char nev[64];
     int kor;
     double atlag;
-
     // Belső függvény:
     void print() {
         // this-> elhagyható
@@ -609,12 +631,10 @@ public:
     template <typename U>
     friend std::ostream& operator<<(std::ostream& os, const vektor<U>& vec);
 };
-
 template <typename T>
 int hanyVektorVan() {
     return vektor<T>::vektorokSzama;
 }
-
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const vektor<T>& vec) {
     os << "{ " << vec.x << "; " << vec.y << "; " << vec.z << " }";
@@ -637,9 +657,7 @@ Az alaposztályunk:
 class negyzet {
 public:
     double a;
-
     negyzet(double a) : a(a) {}
-
     double terulet() { return a * a; }
     double kerulet() { return 4 * a; }
 };
