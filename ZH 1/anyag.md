@@ -1,4 +1,14 @@
-# 1. ZH: Bevezetés
+# **1. ZH anyaga**
+
+# Tartalomjegyzék
+
+1. [Bevezetés](#bevezetés)
+2. [Alap különbségek C és C++ között](#pár-nem-objektum-funkció)
+3. [Osztályok alapjai](#az-osztályok-alapjai)
+4. [Komplexebb objektumműveletek](#komplexebb-objektumműveletek-és-elemek)
+5. [Öröklés](#öröklés-inheritancia)
+
+# Bevezetés
 
 Az előző félévben a C nevű programnyelvet tanultuk. Ez a nyelv jó alapokat adott a programozáshoz (főleg az alacsony nyelvű programozáshoz), de nagyon hiányos, legalábbis a modern alternatívákhoz képest. Emiatt hozta létre Bjarne Stroustrup a C++-t, amit a C modernizált verziójának szánt. **Szinte minden C program C++-ban is működik módosítások nélkül, tehát ha valamit C-vel meg tudsz oldani, akkor C++-al is!**  
 Ellentétben a C-vel, ami csak minimálisan fejlődött 1972 óta, a C++ gyakran új funkciókat kap, például a legujjabb verzió (C++23) 9 különböző könyvtárral bővítette a nyelvet. A C++ alapja viszont ugyanaz maradt a mai napig: C, de osztályokkal, és objektum orientált funkciókkal.  
