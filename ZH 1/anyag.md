@@ -65,6 +65,8 @@ int main() {
 }
 ```
 
+C++-ban:
+
 ```C++
 #include <iostream>
 
@@ -87,14 +89,20 @@ Fájlkezelést az `<fstream>` könyvtárral lehet kezelni:
 
 int main() {
     std::ifstream inputFajl("adat.txt"); // beolvassa az adat.txt fájlt az inputFajl változóba
-    if (!inputFajl.good()) { return -1; }
+    if (!inputFajl.good()) {
+        std::cout << "Nem sikerült megnyitni az \"adat.txt\" fajlt";
+        return -1;
+    }
 
     int adat;
     inputFajl >> adat; // adatba olvas
     inputFajl.close();
 
     std::ofstream outputFajl("kimenet.txt");
-    if (!outputFajl.good()) { return -1; }
+    if (!outputFajl.good()) { 
+        std::cout << "Nem sikerült megnyitni az \"kimenet.txt\" fajlt";
+        return -1;
+    }
 
     outputFajl << adat << " lett beolvasva";
     outputFajl.close();
@@ -125,7 +133,7 @@ int main() {
 
 ## Túlterhelés és alapértékek
 
-A függvénytúlterhelés, amit a C nem tud, azt jelenti, hogy ugyanolyan nevű függvényből lehet több különböző példány, *ha a paraméterlistájuk nem azonos*. A létező függvényeknek meg lehet megadni alapértékeket, amiket nem kell minden beíráskor megadni, ha nem különbözik ettől.
+A függvénytúlterhelés, amit a C nem tud, azt jelenti, hogy ugyanolyan nevű függvényből lehet több különböző példány, *ha a paraméter listájuk nem azonos*. A létező függvényeknek meg lehet megadni alapértékeket, amiket nem kell minden beíráskor megadni, ha nem különbözik ettől.
 
 Példakód:
 
@@ -406,10 +414,10 @@ Ennek használatával a `std::cout`-tal is kompatibilissá lehet tenni az objekt
 class vec2 {
     // ...
 
-    friend std::ostream operator<<(std::ostream& os, const vec2& ez);
+    friend std::ostream& operator<<(std::ostream& os, const vec2& ez);
 };
 
-std::ostream operator<<(std::ostream& os, const vec2& ez) {
+std::ostream& operator<<(std::ostream& os, const vec2& ez) {
     os << "{ " << ez.x << "; " << ez.y << "}";
     return os;
 }
@@ -483,7 +491,7 @@ public:
     }
 
     friend int hanyVektorVan();
-    friend std::ostream operator<<(std::ostream& os, const vektor& vec);
+    friend std::ostream& operator<<(std::ostream& os, const vektor& vec);
 };
 
 vektor::vektorokSzama = 0;
@@ -492,7 +500,7 @@ int hanyVektorVan() {
     return vektor::vektorokSzama;
 }
 
-std::ostream operator<<(std::ostream& os, const vektor& vec) {
+std::ostream& operator<<(std::ostream& os, const vektor& vec) {
     os << "{ " << vec.x << "; " << vec.y << "; " << vec.z " }";
     return os;
 }
@@ -530,6 +538,8 @@ public:
         this->hossz = masik.hossz;
         this->str = new char[masik.hossz];
         strncpy_s(str, hossz, masik.str, hossz);
+
+        return *this;
     }
 }
 ```
@@ -668,8 +678,6 @@ class negyzet {
 public:
     double a;
     negyzet(double a) : a(a) {}
-    double terulet() { return a * a; }
-    double kerulet() { return 4 * a; }
 };
 ```
 
@@ -692,8 +700,88 @@ public:
 
     // a-hoz még mindig hozzá tudunk férni
     teglalap(double a, double b) : a(a), b(b) {}
-
-    double kerulet() { return 2 * a + 2 * b; }
-    double terulet() { return a * b; }
 };
+```
+
+# Virtuális függvények
+
+Két fajta módon lehet egy osztálynak függvénye: későn és korán kötött. Az korai kötésnél a fordító magától helyezi el a függvényhívást fordításkor, és mindig ugyanazt hívja. A késői kötésnél az osztálynak van egy ú.n. VMT-je, ami tartalmazza a függvények helyét (más szóval: függvénypointerei vannak az osztálynak), és ezt hívja futáskor.  
+Mikor van haszna a későn kötésnek? A legegyszerűbb példája az, hogy *mindig* a jó függvényt hívjuk, még ha ide-oda váltunk típusokat is:
+
+```C++
+class negyzet {
+public:
+    double a;
+    negyzet(double a) : a(a) {}
+
+    double terulet() { return a * a; }
+    double kerulet() { return 4 * a; }
+}
+
+class teglalap : public negyzet {
+public:
+    double b;
+    teglalap(double a, double b) : a(a), b(b) {}
+
+    double terulet() { return a * b; }
+    double kerulet() { return 2.0 * (a + b); }
+}
+
+teglalap valt(5.0, 2.0);
+std::cout << negyzet(valt).terulet << std::endl; // Hibás, 5 * 5 = 25-öt ír, mert negyzet függvényét hívja
+```
+
+Ezt virtuális függvényekkel meg lehet oldani:
+
+```C++
+class negyzet {
+    // ...
+    virtual double kerulet() { return 4 * a; }
+    virtual double terulet() { return a * a; }
+}
+
+class teglalap : public negyzet {
+    // ...
+    virtual double terulet() override { return a * b; }
+    virtual double kerulet() override { return 2.0 * (a + b); }
+}
+
+teglalap valt(5.0, 2.0);
+std::cout << negyzet(valt).terulet << std::endl; // Jó, 5 * 2 = 10
+```
+
+Ha van egy alap osztályunk, amiből több objektum örököl úgy, hogy nincsen rajta a virtuális függvény implementálva, akkor kiírjuk a prototípusát, és hogy `= 0;`
+
+Például:
+
+```C++
+// Alap ember osztály
+class ember {
+    std::string nev; // std::stringről lesz majd később szó
+
+public:
+    ember(std::string nev_p) : nev(nev_p) {}
+
+    virtual double berSzamitas() = 0; // Ezen az objektumon nem tudunk bért számítani, az örököltökön viszont igen
+}
+
+// Mérnök
+class mernok : public ember {
+public:
+    ember(std::string nev_p) : nev(nev_p) {}
+
+    virtual double berSzamitas() override {
+        return 900000 * 12;
+    }
+}
+
+// Bölcsész
+class bolcsesz : public ember {
+public:
+    bolcsesz(std::string nev_p) : nev(nev_p) {}
+
+    virtual double berSzamitas() override {
+        return 0;
+    }
+}
 ```
