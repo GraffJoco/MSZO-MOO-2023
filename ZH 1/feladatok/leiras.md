@@ -25,6 +25,16 @@ Erre építsük a következő osztályokat:
 
 Polimorfizmussal garantáld, hogy mindig az osztály jó függvényét hívjuk!
 
+## 3. feladat
+
+Készítjünk egy pénzügyi adatfeldolgozó osztályt! A konstruktor kérjen egy stringet, ami megadja az osztálynak, hogy melyik (CSV formátumú) fájlt olvassa be!  
+A fájl első sora tartalmazza, hogy hány elemmel dolgozunk. A többi sorból olvasd ki `bevetel;kiadas` formátumban az akkori bevételeket, kiadásokat (ezek double-ök)!  
+Az osztálynak csinálj 3 függvényt, amik:
+
+- Visszaadják, hogy hány elem van
+- Visszaadják az összbevételeket
+- Visszaadják az átlagos profitot ($\sum bevetel - \sum kiadas\over{elemszam}$)
+
 ## 4. feladat
 
 Csinálj egy mátrix osztályt! Ez a mátrix osztály legyen típusfüggetlen, és létrehozáskor adjuk meg neki, hogy mekkora legyen ($M \times N$).  
