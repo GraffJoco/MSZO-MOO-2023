@@ -43,7 +43,7 @@ Azt biztosítsd, hogy rendesen szabadítja fel a memóriát!
 
 Végül határozd meg, hogy mennyi:
 
-$\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix} + \begin{bmatrix} 9 & 8 & 7 \\ 6 & 5 & 4 \end{bmatrix}$
+$$\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix} + \begin{bmatrix} 9 & 8 & 7 \\ 6 & 5 & 4 \end{bmatrix}$$
 
 (A kihívást akárhogyan megoldhatod, nem kell `<<`-t túlterhelni, de a formának és értékeknek jónak kell lennie!)
 
