@@ -52,8 +52,8 @@ int main() {
         if (kartyak[i].FtperGHz() < kartyak[legjobb].FtperGHz()) legjobb = i;
     }
 
-    std::cout << "A legjobb GPU az " << kartyak[legjobb].getNev() << ", ami " << kartyak[legjobb].FtperGHz() << " Ft/GHz-es!" << endl;
-    std::cout << "A legrosszabb GPU az " << kartyak[legrosszabb].getNev() << ", ami " << kartyak[legrosszabb].FtperGHz() << " Ft/GHz-es!" << endl;
+    cout << "A legjobb GPU az " << kartyak[legjobb].getNev() << ", ami " << kartyak[legjobb].FtperGHz() << " Ft/GHz-es!" << endl;
+    cout << "A legrosszabb GPU az " << kartyak[legrosszabb].getNev() << ", ami " << kartyak[legrosszabb].FtperGHz() << " Ft/GHz-es!" << endl;
 
     // Fájl bezárásáról ne feledkezz meg!
     fajl.close();
