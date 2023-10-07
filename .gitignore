@@ -3,5 +3,14 @@ prezentaciok
 .vscode
 *.s
 *.asm
+*.aup3
+*.aup3-shm
+*.aup3-wal
+*.mp3
+*.mp4
+*.svg
+*.png
+*.xml
+*.sfk
 Video1/media
 Video1/szerk fájlok
