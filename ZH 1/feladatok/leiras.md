@@ -6,6 +6,10 @@ A C++ egyik új könyvtára a `<memory>`, ami implementálja az ú.n. okospointe
 
 A konstruktorban adj meg egy pointert, amit egy privát elemben eltárolunk. A destruktor `delete`-tel felszabadítja az elemet. Ha az elemhez hozzá akarunk férni, akkor a `okospointer.get()` függvényt hívjuk. Legyen típusfüggetlen az osztály!
 
+## 2. feladat
+
+Hozz létre egy "GPU" nevű osztályt, ami a következőket tartalmazza: a videókártya neve (egyszavas string), az ára valamint, hogy hány GHz-es az órajele. Egy fájlból olvass ki $n$ darab GPU-t. Egy beépített függvénnyel határozd meg az árarányos értékét (Ft/GHz). A fájlban az összes érték tabokkal van elválasztva, az első sor tartalmazza, hogy hány GPU van. Írd ki a konzolba, hogy melyik a legjobb és legrosszabb kártya Ft/GHz alapján.
+
 ## 3. feladat
 
 Készítjünk egy pénzügyi adatfeldolgozó osztályt! A konstruktor kérjen egy stringet, ami megadja az osztálynak, hogy melyik (CSV formátumú) fájlt olvassa be!  
