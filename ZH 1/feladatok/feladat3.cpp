@@ -9,6 +9,7 @@ class adatfeldolgozo {
 public:
     adatfeldolgozo(const char* fajl) {
         std::ifstream input(fajl);
+        // Sikertelen fájlbeolvasás esetére
         if (!input.good()) {
             std::cout << "Nem sikerult az " << fajl << " fajlt megnyitni!";
             exit(-1);
@@ -22,12 +23,14 @@ public:
             exit(-1);
         }
 
+        // Tömbök létrehozása
         bevetelek = new double[elemszam];
         kiadasok = new double[elemszam];
         char buff; // Ez azért van itt, mert a ;-t is valamibe be kell olvasni
         // Értelmesebb lenne fscanf-et használni, de a C++ konziban nem lehet C kód :(
-
+        
         for (int i = 0; i < elemszam; i++)
+            // Ez kb fscanf_s(input, "%lf;%lf", bevetelek[i], kiadasok[i]); - nek felel meg, csak C++-ban
             input >> bevetelek[i] >> buff >> kiadasok[i];
 
         input.close();

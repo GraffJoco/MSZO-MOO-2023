@@ -47,7 +47,7 @@ int main() {
     }
 
     unsigned int legjobb = 0, legrosszabb = 0;
-    for (unsigned int i = 0; i < GPUSzam; i++) {
+    for (unsigned int i = 1; i < GPUSzam; i++) {
         if (kartyak[i].FtperGHz() > kartyak[legrosszabb].FtperGHz()) legrosszabb = i;
         if (kartyak[i].FtperGHz() < kartyak[legjobb].FtperGHz()) legjobb = i;
     }
