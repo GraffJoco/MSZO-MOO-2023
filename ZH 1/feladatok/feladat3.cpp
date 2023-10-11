@@ -1,68 +1,60 @@
 #include <iostream>
+#include <string>
 #include <fstream>
+#include <sstream>
+
+using namespace std;
 
 class adatfeldolgozo {
-    double* bevetelek;
-    double* kiadasok;
-    int elemszam;
-
+    double bevetelek, kiadasok;
+    unsigned int elemszam;
 public:
-    adatfeldolgozo(const char* fajl) {
-        std::ifstream input(fajl);
-        // Sikertelen fájlbeolvasás esetére
-        if (!input.good()) {
-            std::cout << "Nem sikerult az " << fajl << " fajlt megnyitni!";
+    adatfeldolgozo(string fajlnev) : bevetelek(0), kiadasok(0), elemszam(0) {
+        ifstream fajl(fajlnev);
+        stringstream converter;
+        string sor;
+        if (!fajl.is_open()) {
+            std::cout << "Nem sikerult a(z) \"" << fajlnev << "\" fajlt megnyitni!" << endl;
             exit(-1);
         }
 
-        input >> elemszam;
+        while (!fajl.eof()) {
+            getline(fajl, sor);
+            if (sor.length() == 0) continue;
 
-        if (elemszam < 1) {
-            std::cout << "Rossz elemszam lett kiolvasva!";
-            input.close();
-            exit(-1);
+            string bevs, kiads;
+            size_t elvHely = sor.find(";");
+            if (elvHely == string::npos) continue;
+            bevs = sor.substr(0, elvHely);
+            kiads = sor.substr(elvHely + 1);
+
+            double tempBev, tempKiad;
+            converter << bevs << endl;
+            converter >> tempBev;
+
+            converter << kiads << endl;
+            converter >> tempKiad;
+
+            elemszam++;
+            bevetelek += tempBev;
+            kiadasok += tempKiad;
         }
 
-        // Tömbök létrehozása
-        bevetelek = new double[elemszam];
-        kiadasok = new double[elemszam];
-        char buff; // Ez azért van itt, mert a ;-t is valamibe be kell olvasni
-        // Értelmesebb lenne fscanf-et használni, de a C++ konziban nem lehet C kód :(
-        
-        for (int i = 0; i < elemszam; i++)
-            // Ez kb fscanf_s(input, "%lf;%lf", bevetelek[i], kiadasok[i]); - nek felel meg, csak C++-ban
-            input >> bevetelek[i] >> buff >> kiadasok[i];
-
-        input.close();
+        fajl.close();
     }
 
-    ~adatfeldolgozo() {
-        delete[] kiadasok;
-        delete[] bevetelek;
+    unsigned int elemek() { return elemszam; }
+
+    double atlagprofit() {
+        return (bevetelek - kiadasok) / elemszam;
     }
 
-    inline int getElemSzam() { return elemszam; }
-    
-    double osszBevetelek() {
-        double sum = 0;
-        for (int i = 0; i < elemszam; i++)
-            sum += bevetelek[i];
-        return sum;
-    }
-
-    double atlagProfit() {
-        double profit = 0;
-        for (int i = 0; i < elemszam; i++)
-            profit += bevetelek[i] - kiadasok[i];
-        
-        return profit / elemszam;
-    }
 };
 
-int main() {
-    adatfeldolgozo adatok("ZH 1\\feladatok\\adat3.csv");
+const string inputfajl = "ZH 1\\feladatok\\adat3.csv";
 
-    std::cout << adatok.getElemSzam() << " elembol osszesen " <<
-        adatok.osszBevetelek() << " bevetel, atlag " <<
-        adatok.atlagProfit() << " profit elemenkent" << std::endl; 
+int main() {
+    adatfeldolgozo adatok(inputfajl);
+    
+    cout << adatok.elemek() << " elembol " << adatok.atlagprofit() << " Ft atlag profit lett" << endl;
 }
