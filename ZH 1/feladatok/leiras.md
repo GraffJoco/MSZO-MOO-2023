@@ -21,22 +21,16 @@ Az osztálynak csinálj 3 függvényt, amik:
 
 ## 4. feladat
 
-Csinálj egy mátrix osztályt! Ez a mátrix osztály legyen típusfüggetlen, és létrehozáskor adjuk meg neki, hogy mekkora legyen ($M \times N$).  
-Úgy lehessen módosítani az egyes elemeket, mint egy kétdimenziós tömbnél (`matrix[1][2]`, ahol az első index a sort, a második az oszlopot jelöli)  
-Azt biztosítsd, hogy rendesen szabadítja fel a memóriát!
+Csináljunk egy kis (2D-s) szimulációt! Legyen egy osztályunk, ami a szimulált testet tartalmazza. A testnek van pozíciója és sebessége, amiket a konstruktorban is kérünk. Ezen kívül az időt is tárolja (ez mindig 0-ról indul). A $\Delta t$ -s időlépéseket egy tagfüggvénnyel számold ki, ahol $\Delta t$ a paraméter, az új lépés adatai pedig a régieket cseréljék le!
 
-Végül határozd meg, hogy mennyi:
+A következők a fizikai függvények (ha nem jutna eszedbe):
 
-$$\begin{bmatrix} 1 & 2 & 3 \\\
-4 & 5 & 6
-\end{bmatrix} +
-\begin{bmatrix} 9 & 8 & 7 \\\
-6 & 5 & 4
-\end{bmatrix}$$
+$$\underline{g} = \begin{bmatrix} 0 \\ -9,81\end{bmatrix} {m\over{s^2}}$$
 
-(A kihívást akárhogyan megoldhatod, nem kell `<<`-t túlterhelni, de a formának és értékeknek jónak kell lennie!)
+$$\underline{v_t} = \underline{v_{t-1}} + \underline{g}\Delta t$$
 
-Tippek:  
+$$\underline{s_t} = \underline{s_{t-1}} + \underline{v_t}\Delta t $$
 
-- A [] operátort is túl lehet tölteni, mutathat egy valódi kétdimenziós tömbhöz
-- Két mátrix összeadása két egymásban lévő `for` ciklussal meg lehet oldani, a kiírás is hasonló
+Szimulálj le 100 lépést, a következő paraméterekkel, és írd ki egy *eredmenyek.csv* nevű fájlba (úgy, hogy függvényekkel le tudod kérni a mostani fiziai paramétereket):
+
+$$\underline{s_0} = \begin{bmatrix} 0 \\ 10 \end{bmatrix} m; \underline{v_0} = \begin{bmatrix} 10 \\ 0 \end{bmatrix}{m\over{s}}; \Delta t = 0,01 s$$

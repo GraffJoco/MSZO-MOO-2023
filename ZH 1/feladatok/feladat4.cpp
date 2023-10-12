@@ -1,74 +1,45 @@
 #include <iostream>
-#include <stdlib.h>
+#include <fstream>
+#include <string>
 
-template <typename T>
-class matrix {
-private: // class eleve privát, nem kell ezt kiírni
-    unsigned int x, y;
-    T** adatok;
+using namespace std;
 
+const double g_y = -9.81;
+const string fajlnev = "ZH 1\\feladatok\\eredmenyek.csv";
+
+class test {
+    double v_x, v_y, s_x, s_y, t;
 public:
-    matrix(unsigned int sorok, unsigned int oszlopok)
-        : x(sorok), y(oszlopok), adatok(new T*[sorok]) {
-        if (sorok == 0 || oszlopok == 0) {
-            std::cout << "Error! Rossz érték van megadva a mátrix létrehozásakor! A kapott paraméterek: " << x << "; " << y << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        for (unsigned int i = 0; i < x; i++)
-            adatok[i] = new T[oszlopok];
+    test(double v_x0, double v_y0, double s_x0, double s_y0):
+        v_x(v_x0), v_y(v_y0), s_x(s_x0), s_y(s_y0), t(0) {}
+
+    void idolepes(double dt) {
+        v_y += g_y * dt;
+        s_x += v_x * dt;
+        s_y += v_y * dt;
     }
 
-    // Fel kell szabadítani a memóriát
-    ~matrix() {
-        // Sorrend fontos!
-        for (unsigned int i = 0; i < x; i++)
-            delete[] adatok[i];
-        delete[] adatok;
-    }
-
-    T* operator[](unsigned int sor) {
-        return adatok[sor];
-    }
-
-    matrix<T> operator+(matrix<T>& masik) {
-        // "this" nem kötelező, de ajánlom, így egyértelmű, hogy melyik elem melyik mátrixhoz tartozik
-        if (this->x != masik.x || this->y != masik.y) {
-            std::cout << "Error! A két mátrix méretei nem azonosak!" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-        matrix<T> retMat(x, y);
-
-        for (unsigned int i = 0; i < x; i++)
-            for (unsigned int j = 0; j < y; j++)
-                retMat[i][j] = this->adatok[i][j] + masik[i][j];
-        
-        return retMat;
-    }
-
-    void print() {
-        std::cout << std::endl;
-        for (unsigned int i = 0; i < x; i++) {
-            for (unsigned int j = 0; j < y; j++)
-                std::cout << adatok[i][j] << ',';
-            
-            std::cout << std::endl;
-            }
-    }
+    double getVX() { return v_x; }
+    double getVY() { return v_y; }
+    double getSX() { return s_x; }
+    double getSY() { return s_y; }
+    double getT() { return t; }
 };
 
 int main() {
-    matrix<int> mat1(2, 3), mat2(2, 3);
+    test szimulacio(10, 0, 0, 10);
+    ofstream fajl(fajlnev);
+    if (!fajl.is_open()) {
+        cout << "Nem lehet megnyitni a(z) " << fajlnev << " nevu fajlt!" << endl;
+        exit(-1);
+    }
 
-    // feltöltjük elemekkel
-    // erre gyorsabb megoldást írni, de ez most elég
-    mat1[0][0] = 1; mat1[0][1] = 2; mat1[0][2] = 3;
-    mat1[1][0] = 4; mat1[1][1] = 5; mat1[1][2] = 6;
-    
-    mat2[0][0] = 9; mat2[0][1] = 8; mat2[0][2] = 7;
-    mat2[1][0] = 6; mat2[1][1] = 5; mat2[1][2] = 4;
+    fajl << "t;s_x;s_y;v_x;v_y" << endl;
+    for (int i = 0; i < 100; i++) {
+        szimulacio.idolepes(0.01);
+        fajl << szimulacio.getT() << ";" << szimulacio.getSX() << ";" << szimulacio.getSY() << ";"
+            << szimulacio.getVX() << ";" << szimulacio.getVY() << endl;
+    }
 
-
-    matrix<int> eredmeny = mat1 + mat2;
-    eredmeny.print();
+    fajl.close();
 }
