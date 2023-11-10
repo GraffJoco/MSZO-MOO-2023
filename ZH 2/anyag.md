@@ -56,7 +56,7 @@ public:
 class teglalap : public negyzet {
 public:
     double b;
-    teglalap(double a, double b) : a(a), b(b) {}
+    teglalap(double a, double b) : negyzet(a), b(b) {}
 
     double terulet() { return a * b; }
     double kerulet() { return 2.0 * (a + b); }
@@ -91,7 +91,7 @@ Például:
 
 ```C++
 // Alap ember osztály
-class ember {
+class ember abstract {
     std::string nev; // std::stringről lesz majd később szó
 
 public:
@@ -103,7 +103,7 @@ public:
 // Mérnök
 class mernok : public ember {
 public:
-    ember(std::string nev_p) : nev(nev_p) {}
+    mernok(std::string nev_p) : ember(nev_p) {}
 
     virtual double berSzamitas() override {
         return 900000 * 12;
@@ -113,7 +113,7 @@ public:
 // Bölcsész
 class bolcsesz : public ember {
 public:
-    bolcsesz(std::string nev_p) : nev(nev_p) {}
+    bolcsesz(std::string nev_p) : ember(nev_p) {}
 
     virtual double berSzamitas() override {
         return 0;
@@ -213,6 +213,8 @@ int main() {
 
     for (const auto& i : adatok)
         cout << i << "; ";
+
+    cout << "A minimum: " << adatok[0] << "; a maximum: " << adatok.last() << endl;
 
     fajl.close();
 }
