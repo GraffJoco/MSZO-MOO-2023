@@ -1,5 +1,77 @@
 # 2. ZH anyaga
 
+# Operátor túlterhelés
+
+Hogy lehet, hogy a `std::cout`-ot a `<<` (biteltolás balra) művelettel hívjuk meg? Ez az operátor túlterhelés, amivel felülírhatunk egy beépített műveletet, és egy függvényt hívhatunk helyette. Az fontos, hogy kétoperandú műveletet (pl.: kivonás) csak kétoperandusúként, egyoperandusút egyoperandusúként lehet túlterhelni. Ezeket a túlterheléseket nem feltétlenül kell az osztályon belül definiálni, valamint akármilyen típusokkal megoldható.
+
+Alap szintaxis (példaként az összeadás operátorral):
+
+```C++
+class vec2 {
+public:
+    int x, y;
+
+    vec2(int x = 0.0, int y = 0.0) : x(x), y(y) {}
+
+    vec2 operator+(vec2 masik) {
+        return vec2(this->x + masik.x, this->y + masik.y);
+    }
+
+    // Hossz
+    double operator~() {
+        return sqrt(x*x + y*y + z*z);
+    }
+};
+
+vec2 egyik(4, 2);
+vec2 masik = egyik + vec2(2, 7); // masik = {6, 9}
+auto hossz = ~masik; // = 10,8166
+```
+
+Ennek használatával a `std::cout`-tal is kompatibilissá lehet tenni az objektumokat:
+
+```C++
+class vec2 {
+    // ...
+
+    friend std::ostream& operator<<(std::ostream& os, const vec2& ez);
+};
+
+std::ostream& operator<<(std::ostream& os, const vec2& ez) {
+    os << "{ " << ez.x << "; " << ez.y << "}";
+    return os;
+}
+```
+
+## A ++ és -- operátor túlterhelése
+
+A ++ és -- operátor egy speciális eset, ugyanis egyoperandusú, de a változó előtt és mögött is lehet. A pre-, és posztinkrementálás például ezesetben két különböző műveletnek számít, és ezért külön-külön lehet túlterhelni.  
+A preinkrementálás esetében a normális túlterhelési metódust kell alkalmazni, a posztinkrementálásnál pedig egy int típusú paramétert is kell kérni, amit nem fogunk használni.
+
+```C++
+class vec2 {
+    // Preinkrementálás
+    vec2 operator++() {
+        this->x++;
+        return *this;
+    }
+
+    // Posztinkrementálás
+    vec2 operator++(int) {
+        const vec2 minuszEgy = vec2(-1, 0);
+        this->x++;
+        return *this + minuszEgy;
+    }
+};
+
+vec2 origo(0, 0);
+cout << origo++ << endl; // {0; 0}
+cout << origo << endl; // {1; 0} posztinkrementálás növeli az értéket, de nem használja a számításokban
+
+origo = vec2(0, 0);
+cout << ++origo << endl; // {1; 0} preinkrementálás növeli az értéket, és használja is
+```
+
 # Öröklés (inheritancia)
 
 Az OOP-ban gyakran egy osztály más osztályokra épül. Ez azt jelenti, hogy az eredeti osztály tulajdonságaihoz, függvényeihez van hozzáférése, de ezeket módotíhatja, és adhat is hozzá.  
@@ -40,6 +112,7 @@ public:
 
 # Virtuális függvények
 
+**A következő anyagrész nem minden gyakveznél lesz számon kérve**  
 Két fajta módon lehet egy osztálynak függvénye: későn és korán kötött. Az korai kötésnél a fordító magától helyezi el a függvényhívást fordításkor, és mindig ugyanazt hívja. A késői kötésnél az osztálynak van egy ú.n. VMT-je, ami tartalmazza a függvények helyét (más szóval: függvénypointerei vannak az osztálynak), és ezt hívja futáskor.  
 Mikor van haszna a későn kötésnek? A legegyszerűbb példája az, hogy *mindig* a jó függvényt hívjuk, még ha ide-oda váltunk típusokat is:
 
@@ -218,4 +291,72 @@ int main() {
 
     fajl.close();
 }
+```
+
+## (láncolt) lista
+
+A láncolt lista, C++-ban `list`, egy olyan tároló, ami nem lineárisan, hanem pointerekkel tárolja egymás után az értékeket. Emiatt egyszerű listába helyezni, törölni elemeket, de elérni azokát már nem olyan szimpla: a `[]` operátor és `.at()` függvény nincs értelmezve a listákon. Az elemeken viszont át lehet menni a speciális, iterátoros for ciklusokkal.
+
+A következő példa megmutatja, hogy hogyan lehet a dinamikus törlést alkalmazni:
+
+```C++
+#include <list>
+#include <iostream>
+#include <algorithm>
+#include <stdlib.h>
+#include <time.h>
+
+using namespace std;
+
+// Ez visszaadja majd, hogy töröljük-e az elemet
+bool bukottE(int jegy) {
+    return jegy == 1;
+}
+
+int main() {
+    srand((unsigned int)time(NULL));
+
+    // Jegyek beírása
+    list<int> jegyek;
+    for (int i = 0; i < 200; i++) {
+        jegyek.push_back(rand() % 5 + 1);
+    }
+
+    // Töröljük azokat, akik buktak
+    // FONTOS: ha függvénnyel szűrünk, vagy törlünk, akkor nem írunk zárójelt a függvény neve után
+    remove_if(jegyek, bukottE);
+
+    cout << 200 - jegyek.size() << " ember bukott meg iden" << endl;
+
+    cout << "A többiek a következö jegyeket kaptak:" << endl;
+    for (const auto& i : jegyek) {
+        cout << i << "; ";
+    }
+}
+```
+
+# Speciális szűrési, és törlési megoldások lambda függvények használatával
+
+**A következő anyag nem minden gyakveznél lesz számon kérve**  
+Az előző példában a `bukottE` függvényt zárójel nélkül adtuk át, miért van ez? Röviden mondva, nem a függvény visszaadott értéke, hanem maga a függvény (pointere) volt a paraméter. A C++ STL tárolóinak egy csomó függvénye van, amelynél így gyorsan megcsinálhatunk ilyen műveleteket, pl.: `find_if`, `remove_if`, `count_if`  
+Az itt hívott függvényeket, melyeket csak egyszer hívunk, lambda függvényekre lehet lecserélni, amik gyorsabbak.
+
+A lambdák a következő módon néznek ki:
+
+```C++
+[](tipus argumentum, ...) -> retTipus {
+    // ...
+}
+```
+
+ahol `[]` a főfüggvény átadott függvényeit tartalmazza: ha használni akarjuk a változóinkat, akkor $=$-t vagy $\&$-t rakunk oda
+    `(tipus argumentum)` a függvény típusait jelenti
+    `-> retTipus` a típus, amit a függvény visszaad, de ez általában nem kötelező
+
+Az előző példában a törlés függvényt a következő módon lehet leírni lambdával:
+
+```C++
+remove_if(jegyek, [](int jegy) -> bool {
+    return jegy == 1;
+});
 ```
