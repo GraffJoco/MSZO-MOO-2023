@@ -360,3 +360,69 @@ remove_if(jegyek, [](int jegy) -> bool {
     return jegy == 1;
 });
 ```
+
+Ezekkel lehet speciális szabályok szerint szortírozni is, ami főleg az osztályok esetében fontos:
+
+```C++
+/* Példa:
+Egy fájlban motorok neve (egyszavas), feszültség, áramigénye, valamint effektív teljesítménye van megadva. Rendezzük hatékonyság alapján sorrendbe ezeket.
+Tabokkal vannak az adatok elválasztva.*/
+#include <algorithm>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+
+using namespace std;
+
+// struct = minden publikus
+struct motor {
+    double U, I, W_eff;
+    string nev;
+
+    motor(nev, double U, double I, double P_eff) : nev(nev), U(U), I(I), P_eff(P_eff) {}
+
+    friend ostream& operator<<(ostream& os, const motor& ez) {
+        os << nev << ": " << U "V, " << I << "A ," << P_eff << "W effektiv";
+    }
+};
+
+const string fajlnev = "motorok.txt";
+stringstream konv;
+
+int main() {
+    ifstream fajl(fajlnev);
+    vector<motor> motorok;
+
+    if (!fajl.good()) {
+        cout << "Nem sikerült a(z) " << fajlnev << "nevü fajlt megnyitni!" << endl>;
+        return -1;
+    }
+
+    string sor;
+    while (!fajl.eof()) {
+        getline(fajl, sor);
+        if (sor.empty()) continue;
+        
+        string tempnev;
+        double I, U, P;
+
+        konv << sor << endl;
+        konv >> tempnev >> I >> U >> P;
+        motorok.push_back(motor(tempnev, I, U, P));
+    }
+
+    sort(motorok, [](const motor& egyik, const motor& masik) -> bool {
+        return (egyik.P_eff / egyik.I / egyik.U) < (masik.P_eff / masik.I / masik.U);
+    });
+
+    cout << "A motorok sorrendje: " << endl;
+
+    for (const auto& mot : motorok) {
+        cout << mot << endl;
+    }
+
+    fajl.close();
+}
+```
