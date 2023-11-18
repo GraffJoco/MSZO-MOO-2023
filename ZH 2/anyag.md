@@ -280,6 +280,7 @@ int main() {
         adatok.push_back(temp); // A végére rakjuk az értéket, nem fog kicímezni, újraméretezi magát
     }
 
+    // a < operátor alapján rendez
     sort(adatok.begin(), adatok.end());
 
     cout << "A rendezett adatok:" << endl;
