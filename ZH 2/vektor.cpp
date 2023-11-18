@@ -30,7 +30,7 @@ public:
         return vektor(this->x * skalar, this->y * skalar, this->z * skalar);
     }
 
-    vektor<T> operator*(const vektor<T> masik) {
+    T operator*(const vektor<T> masik) {
         return this->x * masik.x + this->y * masik.y + this->z * masik.z;
     }
 
