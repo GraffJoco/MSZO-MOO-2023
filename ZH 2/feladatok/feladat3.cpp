@@ -39,7 +39,7 @@ int main() {
 
         double GHz, ar;
         string nev;
-        konv << sor;
+        konv << sor << endl;
         konv >> nev >> ar >> GHz;
 
         kartyak.push_back(GPU(nev, GHz, ar));
