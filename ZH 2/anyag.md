@@ -58,9 +58,9 @@ class vec2 {
 
     // Posztinkrementálás
     vec2 operator++(int) {
-        const vec2 minuszEgy = vec2(-1, 0);
+        vec2 eredeti = *this;
         this->x++;
-        return *this + minuszEgy;
+        return eredeti;
     }
 };
 
@@ -113,7 +113,7 @@ public:
 # Virtuális függvények
 
 **A következő anyagrész nem minden gyakveznél lesz számon kérve**  
-Két fajta módon lehet egy osztálynak függvénye: későn és korán kötött. Az korai kötésnél a fordító magától helyezi el a függvényhívást fordításkor, és mindig ugyanazt hívja. A késői kötésnél az osztálynak van egy ú.n. VMT-je, ami tartalmazza a függvények helyét (más szóval: függvénypointerei vannak az osztálynak), és ezt hívja futáskor.  
+Két fajta módon lehet egy osztálynak függvénye: későn és korán kötött. A korai kötésnél a fordító magától helyezi el a függvényhívást fordításkor, és mindig ugyanazt hívja. A késői kötésnél az osztálynak van egy ú.n. VMT-je, ami tartalmazza a függvények helyét (más szóval: függvénypointerei vannak az osztálynak), és ezt hívja futáskor.  
 Mikor van haszna a későn kötésnek? A legegyszerűbb példája az, hogy *mindig* a jó függvényt hívjuk, még ha ide-oda váltunk típusokat is:
 
 ```C++
