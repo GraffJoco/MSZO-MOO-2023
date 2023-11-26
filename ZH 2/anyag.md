@@ -96,7 +96,7 @@ Az inherintancia esetében is vannak ilyen láthatósági beállítások, és í
 | :-- | :-: | :-: | :-: |
 | **public** | public | protected | private |
 | **protected** | protected | protected | private |
-| **private** | Rejtett | Rejtett | Rejtett |
+| **private** | private | Rejtett | Rejtett |
 
 Ez alapján a négyzetünkből `public` öröklés kell:
 
